@@ -4,14 +4,14 @@ ncust <- 1000
 cust.df <- data.frame(cust.id = as.factor(c(1:ncust)))
 cust.df$age <- rnorm(n = ncust, mean = 35, sd = 5)
 cust.df$credit.score <- rnorm(n = ncust, mean = 3 * cust.df$age + 620, sd = 50)
-cust.df$email <- factor(sample(c("Yes", "No"), size = ncust, replace = TRUE,
+cust.df$email <- factor(sample(c("yes", "no"), size = ncust, replace = TRUE,
                                prob = c(0.8, 0.2)))
 # Creating distance vector with lognormal distribution
 cust.df$distance.to.store <- exp(rnorm(n = ncust, mean = 2, sd = 1.2))
 summary(cust.df)
 # Creating online visit with negative binomial distribution
 cust.df$online.visits <- rnbinom(ncust, size = 0.3,
-                                 mu = 15 + ifelse(cust.df$email == "Yes", 15, 0)
+                                 mu = 15 + ifelse(cust.df$email == "yes", 15, 0)
                                  - 0.7 * (cust.df$age - median(cust.df$age)))
 # Assume 30% chance of online transaction, with lognormal spendings
 cust.df$online.trans <- rbinom(ncust, size = cust.df$online.visits, prob = 0.3)
@@ -57,3 +57,78 @@ plot(x = cust.df$age, y = cust.df$credit.score, col = "blue",
      xlab = "Customer Age (Years)", ylab = "Customer Credit Score")
 abline(h = mean(cust.df$credit.score), col = "darkblue", lty = "dotted")
 abline(v = mean(cust.df$age), col = "darkblue", lty = "dotted")
+# Do online buyers buy less in store?
+plot(cust.df$store.spend, cust.df$online.spend,
+     main = "Customers as of June 2014",
+     xlab = "Prior 12 months in-store sales ($)",
+     ylab = "Prior 12 months online sales ($)", cex = 0.7)
+hist(cust.df$store.spend, breaks = (0:ceiling(max(cust.df$store.spend) / 10)) * 10,
+     main = "Customers as of June 2014",
+     xlab = "Prior 12 months in-store sales ($)",
+     ylab = "Count of Customers")
+# Color coding email campaign in overal sales scatter plot
+my.col <- c("black", "green3")
+my.pch <- c(1, 19) # Solid and open circles
+head(cust.df$email)
+as.numeric(head(cust.df$email))
+my.col[as.numeric(head(cust.df$email))]
+my.col[head(cust.df$email)]
+plot(cust.df$store.spend, cust.df$online.spend, cex = 0.7,
+     col = my.col[cust.df$email], pch = my.pch[cust.df$email],
+     main = "Customers as of June 2014",
+     xlab = "Prior 12 months in-store sales ($)",
+     ylab = "Prior 12 months online sales ($)")
+# Adding legend
+legend(x = "topright", legend = paste("email on file:", levels(cust.df$email)),
+       col = my.col, pch = my.pch)
+# Logorithmic scaling to get a better view
+plot(cust.df$store.spend + 1, cust.df$online.spend + 1, cex = 0.7, log = "xy",
+     col = my.col[cust.df$email], pch = my.pch[cust.df$email],
+     main = "Customers as of June 2014",
+     xlab = "Prior 12 months in-store sales ($)",
+     ylab = "Prior 12 months online sales ($)")
+legend(x = "topright", legend = paste("email on file:", levels(cust.df$email)),
+       col = my.col, pch = my.pch)
+
+# Multiple plots in the same graphical object
+par(mfrow = c(2,2))
+plot(cust.df$distance.to.store, cust.df$store.spend, main = "store")
+plot(cust.df$distance.to.store, cust.df$online.spend, main = "online")
+plot(cust.df$distance.to.store, cust.df$store.spend + 1, log = "xy",
+     main="store, log")
+plot(cust.df$distance.to.store, cust.df$online.spend + 1, log = "xy",
+     main="online, log")
+par(mfrow=c(1,1))
+
+# Scatterplot Matrices
+pairs(formula = ~ age + credit.score + email + distance.to.store +
+        online.visits + online.trans + online.spend + store.trans + store.spend,
+      data = cust.df)
+# scatterPlotMatrix using "car" package
+install.packages("car")
+library(car)
+scatterplotMatrix(formula = ~ age + credit.score + email + distance.to.store +
+                    online.visits + online.trans + online.spend + store.trans +
+                    store.spend, data = cust.df, diagonal = "histogram")
+install.packages("gpairs")
+library(gpairs)
+gpairs(cust.df[, c(2:10)])
+
+# Instead of plots, covariance can be used
+cov(cust.df$age, cust.df$credit.score)
+# Scaled version, pearson-correlation
+cor(cust.df$age, cust.df$credit.score)
+# According to Cohen's Rules of Thumb, in social sciences (normal dist):
+# r = 0.1 -> Weak correlation
+# r = 0.3 -> Medium correlation
+# r > 0.5 -> Strong correlation
+# Check if the correlation is statistically significant
+cor.test(cust.df$age, cust.df$credit.score)
+# Correlation matrix
+cor(cust.df[, c(2, 3, 5:12)])
+# Rather than numbers, corrplot offers nice view
+install.packages("corrplot")
+installed.packages("gplots")
+library(corrplot)
+corrplot(corr = cor(cust.df[, c(2, 3, 5:12)], use = "complete.obs"),
+         upper = "ellipse", tl.pos = "lt")
