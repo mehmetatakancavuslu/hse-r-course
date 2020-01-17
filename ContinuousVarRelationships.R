@@ -132,3 +132,33 @@ installed.packages("gplots")
 library(corrplot)
 corrplot(corr = cor(cust.df[, c(2, 3, 5:12)], use = "complete.obs"),
          upper = "ellipse", tl.pos = "lt")
+
+# Transforming variables before calculating correlations
+cor(cust.df$distance.to.store, cust.df$store.spend)
+cor(1/cust.df$distance.to.store, cust.df$store.spend)
+plot(cust.df$distance.to.store, cust.df$store.spend)
+plot(1/sqrt(cust.df$distance.to.store), cust.df$store.spend)
+
+# Box-Cox Transformations
+library(car)
+powerTransform(cust.df$distance.to.store)
+lambda <- coef(1/powerTransform(cust.df$distance.to.store))
+bcPower(cust.df$distance.to.store, lambda)
+par(mfrow = c(1, 2))
+hist(cust.df$distance.to.store, xlab = "Distance to nearest store",
+     ylab = "Count of customers", main = "Original Distribution")
+hist(bcPower(cust.df$distance.to.store, lambda), ylab = "Count of customers",
+     xlab = "Box-Cox transform of distance", main = "Transformed Distribution")
+
+# Check correlations with transformed variables
+l.dist <- coef(powerTransform(cust.df$distance.to.store))
+l.spend <- coef(powerTransform(cust.df$store.spend + 1))
+cor(bcPower(cust.df$distance.to.store, l.dist),
+    bcPower(cust.df$store.spend + 1, l.spend))
+
+# Associations in survey responses
+par(mfrow = c(1, 1))
+plot(cust.df$sat.service, cust.df$sat.selection,
+     xlab = "Customer satisfaction with services",
+     ylab = "Custoemr satisfaction with selections",
+     main = "Customers as of June 2014")
