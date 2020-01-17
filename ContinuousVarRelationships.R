@@ -162,3 +162,13 @@ plot(cust.df$sat.service, cust.df$sat.selection,
      xlab = "Customer satisfaction with services",
      ylab = "Custoemr satisfaction with selections",
      main = "Customers as of June 2014")
+plot(jitter(cust.df$sat.service), jitter(cust.df$sat.selection),
+     xlab = "Customer satisfaction with services",
+     ylab = "Custoemr satisfaction with selections",
+     main = "Customers as of June 2014")
+
+# Polychoric correlation coefficient for ordinal variables
+resp <- !is.na(cust.df$sat.service)
+cor(cust.df$sat.service[resp], cust.df$sat.selection[resp])
+library(psych)
+polychoric(cbind(cust.df$sat.service[resp], cust.df$sat.selection[resp]))
