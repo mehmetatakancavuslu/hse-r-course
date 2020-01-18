@@ -40,3 +40,12 @@ cor(cust.df[, c("age", "sat.service", "sat.selection")], use = "complete.obs",
 
 # Correlation tests
 cor.test(cust.df$age, cust.df$sat.service)
+cor.test(cust.df$age, cust.df$credit.score)
+
+# Scatterplot matrix
+library(car)
+scatterplotMatrix(formula = ~ age + sat.service + sat.selection,
+                  data = cust.df, diagonal = "histogram")
+library(corrplot)
+corrplot(corr = cor(cust.df[, c("age", "sat.service", "sat.selection")],
+                    use = "complete.obs"), method = "ellipse")
