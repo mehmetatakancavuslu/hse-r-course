@@ -1,5 +1,4 @@
-## Seminar Day7
-## Logistics Regression
+## Day 7 Assignment
 options(scipen = 999)
 
 # Import data as a dataframe
@@ -15,19 +14,21 @@ model1 <- glm(Acquisition ~ Acq_Expense + Acq_Expense_SQ + Industry +
               data = acquisition)
 summary(model1)
 
+# Build model with significant variables
+model2 <- glm(Acquisition ~ Acq_Expense + Acq_Expense_SQ + Revenue + Employees,
+              family = binomial(link = "logit"),
+              data = acquisition)
+summary(model2)
+
 # Save predicted probability and outcome for each prospect
-acquisition$Acq_Prob <- model1$fitted.values
+acquisition$Acq_Prob <- model2$fitted.values
 acquisition$Acq_Pred <- ifelse(model1$fitted.values > 0.5, 1, 0)
 
 # Create a confusion matrix
 confusionmatrix <- xtabs(~ acquisition$Acq_Pred + acquisition$Acquisition)
 confusionmatrix
 
-# Find accuracy
-nrow(acquisition[(acquisition$Acq_Pred == 1 & acquisition$Acquisition == 1) |
-              (acquisition$Acq_Pred == 0 & acquisition$Acquisition == 0),])/
-  nrow(acquisition)
-# Shorter way by using confusion matrix
+# Accuracy by using confusion matrix
 (confusionmatrix[1,1] + confusionmatrix[2,2])/sum(confusionmatrix)
 
 # Create a madeup dataframe with new prospects
@@ -35,9 +36,14 @@ newprospects <- data.frame(Acq_Expense = c(500, 500, 500),
                            Industry = c(0, 1, 0), Revenue = c(20, 30, 40),
                            Employees = c(400, 1000, 300))
 newprospects$Acq_Expense_SQ <- newprospects$Acq_Expense^2
+
+# Predictions on new dataset
 newprospects$Acq_Prob <- predict(model1, newprospects, type = "response")
 newprospects$Acq_Pred <- ifelse(newprospects$Acq_Prob > 0.5, 1, 0)
-# Expected number of acquired propects based on the sum of probs
-sum(newprospects$Acq_Prob)
-# Expected number of prospects based on prob of having bigger than 0.5
-sum(newprospects$Acq_Pred)
+newprospects$Acq_Prob2 <- predict(model2, newprospects, type = "response")
+newprospects$Acq_Pred2 <- ifelse(newprospects$Acq_Prob > 0.5, 1, 0)
+
+# TASK 2
+confusionmatrix[1,1] + confusionmatrix[2,2]
+
+# TASK 3
