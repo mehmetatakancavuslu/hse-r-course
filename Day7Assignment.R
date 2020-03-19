@@ -47,3 +47,13 @@ newprospects$Acq_Pred2 <- ifelse(newprospects$Acq_Prob > 0.5, 1, 0)
 confusionmatrix[1,1] + confusionmatrix[2,2]
 
 # TASK 3
+acquired_expense <- seq(from = 0, to = 2000, by = 1)
+summary(model2)
+Z <- -26.1989 + 0.06726*acquired_expense - 0.00004*(acquired_expense^2) +
+  0.03175*20 + 0.00496*20
+plot(x = acquired_expense, y = Z)
+temp <- data.frame(matrix(NA, nrow = length(Z), ncol = 2))
+colnames(temp) <- c("acquired_expense", "Z")
+temp$acquired_expense <- acquired_expense
+temp$Z <- Z
+temp[temp$Z == max(temp$Z),]
